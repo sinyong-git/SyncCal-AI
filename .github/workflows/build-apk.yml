@@ -23,17 +23,22 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Create Base Project & Configure
+      - name: Create Base Project & Configure for Galaxy S26
         run: |
           flutter create --org com.synccal --project-name synccal_ai app_project
           cd app_project
-          # 안전한 버전으로 패키지 추가
+          
+          # 안정적인 패키지 추가
           flutter pub add intl http timezone
           
-          # Android 매니페스트 권한 자동 삽입
+          # 1. 캘린더 및 알림 필수 권한 주입
           sed -i '/<application/i \    <uses-permission android:name="android.permission.READ_CALENDAR" />\n    <uses-permission android:name="android.permission.WRITE_CALENDAR" />\n    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />' android/app/src/main/AndroidManifest.xml
+          
+          # 2. 갤럭시 S26 최신 안드로이드 호환을 위한 Target SDK 및 Compile SDK 상향 설정
+          sed -i 's/targetSdkVersion flutter.targetSdkVersion/targetSdkVersion 35/g' android/app/build.gradle || true
+          sed -i 's/compileSdkVersion flutter.compileSdkVersion/compileSdkVersion 35/g' android/app/build.gradle || true
 
-      - name: Build Galaxy Debug APK
+      - name: Build Galaxy S26 APK
         run: |
           cd app_project
           flutter build apk --debug
@@ -41,5 +46,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SyncCal_AI_Galaxy_APK
+          name: SyncCal_AI_Galaxy_S26
           path: app_project/build/app/outputs/flutter-apk/app-debug.apk
