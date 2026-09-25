@@ -1,0 +1,41 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch: # 웹에서 버튼 클릭으로 즉시 수동 실행
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.x'
+          channel: 'stable'
+
+      - name: Create Flutter App Project
+        run: |
+          flutter create --org com.synccal --project-name synccal_ai app_project
+          cd app_project
+          flutter pub add device_calendar intl http timezone
+
+      - name: Build Debug APK for Galaxy
+        run: |
+          cd app_project
+          flutter build apk --debug
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: SyncCal_AI_Galaxy
+          path: app_project/build/app/outputs/flutter-apk/app-debug.apk
